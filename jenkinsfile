@@ -106,3 +106,36 @@ pipeline {
         }
     }
 }
+
+
+
+pipeline {
+    agent any
+environment {
+    IMAGE_NAME = "public.ecr.aws/e7k5c9q2/zomato"
+    IMAGE_TAG = "${BUILd_NUMBER}"
+    }
+    stages {
+        stage('clone soucecode') {
+            steps {
+               git 'https://github.com/kavitaghule/DevOps-Project-Zomato-Kastro.git'
+            }
+        }
+        stage('build soucecode') {
+            steps {
+               sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
+            }
+        }
+         stage('push soucecode') {
+            steps {
+               script {
+                   sh '''
+                   aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/e7k5c9q2
+                   docker push $IMAGE_NAME:$IMAGE_TAG
+                   '''
+               }
+             
+            }
+        }
+    }
+}
